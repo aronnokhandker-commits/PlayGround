@@ -1,0 +1,208 @@
+:root {
+  --bg: #07141d;
+  --panel: rgba(10, 19, 29, 0.78);
+  --panel-border: rgba(94, 201, 255, 0.25);
+  --text: #eef8ff;
+  --accent: #59d7ff;
+  --danger: #ff5f5f;
+  --gold: #ffd166;
+  --road: #2b2d35;
+  --road-line: rgba(255, 255, 255, 0.25);
+  --grass: #142d20;
+  --building: #1b2a3a;
+  --building-dark: #0f1f2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #1d2f42 0%, var(--bg) 60%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  touch-action: none;
+}
+
+#game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #07141d;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #14383d 0%, #07141d 100%);
+}
+
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#topbar {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 10px 14px;
+}
+
+#topbar .panel:first-child {
+  max-width: min(58vw, 620px);
+}
+
+.label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  margin-bottom: 5px;
+}
+
+#missionText {
+  display: block;
+  font-size: clamp(0.92rem, 2vw, 1.45rem);
+  line-height: 1.2;
+}
+
+.stats {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: min(52vw, 440px);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+}
+
+#messageBox {
+  position: absolute;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  width: min(60vw, 620px);
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: rgba(9, 18, 25, 0.72);
+  border: 1px solid rgba(114, 196, 255, 0.3);
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+}
+
+#messageTitle {
+  display: block;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+#messageText {
+  display: block;
+  font-size: clamp(0.7rem, 1.6vw, 1rem);
+  opacity: 0.9;
+}
+
+#minimapWrap {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(134, 210, 255, 0.35);
+  border-radius: 16px;
+  background: rgba(8, 17, 23, 0.62);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  padding: 8px;
+  pointer-events: none;
+}
+
+#minimap {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
+  background: rgba(10, 25, 27, 0.7);
+}
+
+#touchControls {
+  position: absolute;
+  left: 18px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(42vw, 260px);
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.leftCluster, .rightCluster {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  border: 1px solid rgba(138, 195, 255, 0.35);
+  background: rgba(9, 18, 25, 0.72);
+  color: var(--text);
+  font-size: 1.8rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+button:active, button.active {
+  background: rgba(89, 215, 255, 0.22);
+  transform: translateY(1px) scale(0.98);
+}
+
+@media (max-width: 760px) {
+  #topbar {
+    flex-direction: column;
+  }
+
+  .stats {
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  #messageBox {
+    left: 18px;
+    right: 170px;
+    bottom: 170px;
+    width: auto;
+    transform: none;
+  }
+
+  #minimapWrap {
+    width: 150px;
+    height: 150px;
+  }
+}

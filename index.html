@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>City Heist</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <div id="game-shell">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+      <div id="hud">
+        <div id="topbar">
+          <div class="panel">
+            <span class="label">Mission</span>
+            <strong id="missionText">Reach the pickup point.</strong>
+          </div>
+          <div class="panel stats">
+            <span>Cash: $<strong id="cashValue">0</strong></span>
+            <span>Heat: <strong id="heatValue">0</strong></span>
+            <span>Health: <strong id="healthValue">100</strong></span>
+            <span>Speed: <strong id="speedValue">0</strong></span>
+          </div>
+        </div>
+
+        <div id="messageBox">
+          <strong id="messageTitle">Open City</strong>
+          <span id="messageText">Steal the package, dodge the cops, and make it out clean.</span>
+        </div>
+
+        <div id="minimapWrap">
+          <canvas id="minimap" width="180" height="180"></canvas>
+        </div>
+
+        <div id="touchControls" aria-label="Touch controls">
+          <div class="leftCluster">
+            <button data-key="ArrowLeft">◀</button>
+            <button data-key="ArrowRight">▶</button>
+          </div>
+          <div class="rightCluster">
+            <button data-key="ArrowUp">▲</button>
+            <button data-key="ArrowDown">▼</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
