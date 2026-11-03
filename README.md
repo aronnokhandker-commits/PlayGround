@@ -1,18 +1,23 @@
-# PlayGround
+# Moonroot
 
-<!-- omgithub:readme:start -->
-## 🚀 Build, play, and remix with OMGithub
+**Farm by day. Defend by night.** A self-contained, browser-playable 2D game about growing a moonlit garden and protecting your homestead from nighttime visitors.
 
-**Created using [OMGithub.com](https://omgithub.com).**
+## Play
 
-[![OMGithub](https://img.shields.io/badge/OMGithub-Open%20project-orange?style=for-the-badge)](https://omgithub.com/aronnokhandker-commits/PlayGround)
-[![GitHub](https://img.shields.io/badge/GitHub-Source-181717?logo=github&style=for-the-badge)](https://github.com/aronnokhandker-commits/PlayGround)
+Open `index.html` in a modern browser, or serve this folder locally:
 
-- 🎮 [Open the project](https://omgithub.com/aronnokhandker-commits/PlayGround).
-- ✨ [Remix this project](https://omgithub.com/?remix=aronnokhandker-commits%2FPlayGround).
-- 💻 [Explore the source](https://github.com/aronnokhandker-commits/PlayGround).
-- 🛠️ [Check build runs](https://github.com/aronnokhandker-commits/PlayGround/actions).
-- 🐛 [Report an issue](https://github.com/aronnokhandker-commits/PlayGround/issues).
-- 👤 [Explore the creator's projects](https://omgithub.com/aronnokhandker-commits).
-- 🌍 [Create with OMGithub](https://omgithub.com).
-<!-- omgithub:readme:end -->
+```sh
+python3 -m http.server 8080
+```
+
+Then visit <http://localhost:8080>.
+
+## How to play
+
+- Plant carrot or moonberry seeds in the garden furrows. Carrots are cheaper and ripen sooner; moonberries sell for more.
+- Water crops once per day to help them grow. Harvest ripe crops for gold.
+- Buy pea turrets and place them on the stone pads. They automatically fire at enemies on the road.
+- Press **Start Night** when you're ready. Survive five increasingly difficult waves without losing all five homestead hearts.
+- Earn a little gold for each cleared wave and spend it on seeds or more defenses.
+
+The game supports mouse, touch, and keyboard shortcuts (`1` carrots, `2` moonberries, `3` water, `4` harvest, `5` turret, `Space` start night). No build step or external assets are required.
