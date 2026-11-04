@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#101338" />
+  <title>Neon Dash — Skyline Sprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell" id="gameShell">
+    <canvas id="game" aria-label="Neon Dash platform game"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="wordmark" href="#" aria-label="Neon Dash home"><span class="mark">N</span><span>NEON<span class="wordmark-light">DASH</span></span></a>
+      <div class="level-tag"><i></i> SKYLINE SPRINT <span>01</span></div>
+      <button class="sound-button" id="soundButton" aria-label="Toggle sound">♫ <span>SOUND ON</span></button>
+    </header>
+    <section class="hud" id="hud" aria-live="polite">
+      <div class="hud-stat"><span class="stat-icon ring-icon">◉</span><div><small>SHARDS</small><strong id="ringCount">00</strong></div></div>
+      <div class="hud-stat"><span class="stat-icon score-icon">✦</span><div><small>SCORE</small><strong id="scoreCount">000000</strong></div></div>
+      <div class="hud-stat time-stat"><span class="stat-icon">◷</span><div><small>TIME</small><strong id="timeCount">00:00</strong></div></div>
+    </section>
+    <aside class="progress-track" aria-label="Level progress"><span id="progressFill"></span></aside>
+    <div class="toast" id="toast" aria-live="polite"></div>
+    <section class="screen-card intro-card" id="introCard">
+      <div class="eyebrow"><span></span> A HIGH-SPEED PLATFORMER <span></span></div>
+      <h1>CHASE THE<br><em>HORIZON.</em></h1>
+      <p>Dash through the skyline, scoop up energy shards<br class="desktop-break"> and see how fast you can fly.</p>
+      <button class="primary-button" id="startButton">START RUN <span>↗</span></button>
+      <div class="control-hint"><span>← →</span> MOVE <b>·</b> <span>SPACE</span> JUMP <b>·</b> <span>SHIFT</span> BOOST</div>
+      <div class="card-glow"></div>
+    </section>
+    <section class="screen-card result-card hidden" id="resultCard">
+      <div class="eyebrow"><span></span> RUN COMPLETE <span></span></div>
+      <h2 id="resultTitle">NICE RUN.</h2>
+      <p id="resultCopy">The skyline is yours.</p>
+      <div class="result-stats"><div><small>SHARDS</small><strong id="finalRings">00</strong></div><div><small>FINAL SCORE</small><strong id="finalScore">000000</strong></div><div><small>TIME</small><strong id="finalTime">00:00</strong></div></div>
+      <button class="primary-button" id="restartButton">RUN IT BACK <span>↻</span></button>
+    </section>
+    <nav class="touch-controls" id="touchControls" aria-label="Touch game controls">
+      <div class="direction-pad"><button data-control="left" aria-label="Move left">←</button><button data-control="right" aria-label="Move right">→</button></div>
+      <div class="action-pad"><button class="boost-touch" data-control="boost" aria-label="Boost">BOOST</button><button class="jump-touch" data-control="jump" aria-label="Jump">↑</button></div>
+    </nav>
+    <div class="bottom-note"><span>WIND IN YOUR HAIR. LIGHT AT YOUR HEELS.</span><span>© 2026 NEON DASH STUDIO</span></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
