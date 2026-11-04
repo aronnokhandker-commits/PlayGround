@@ -23,6 +23,6 @@ A complete, original high-speed side-scrolling platform game that runs in a mode
 
 ### Play
 
-Open `index.html` directly or serve this folder with any static web server. On desktop use **← / →** (or **A / D**) to run, **Space** to jump, and **Shift** to boost. On phones and tablets, use the on-screen arrows, jump, and boost controls. Collect energy shards, bounce from springs, avoid patrol bots, and reach the finish.
+Open `index.html` directly or serve this folder with any static web server. On desktop use **← / →** (or **A / D**) to run, **Space** to jump, **Shift** to boost, and **Esc** to pause. On phones and tablets, use the on-screen arrows, jump, boost, and pause controls. Chain shard pickups for up to **5× score**, keep your boost meter charged, bounce from springs, avoid patrol bots, and reach the finish for a time bonus. Your best score is saved in this browser.
 
 The game is inspired by the momentum and flow of classic console platformers, with an original character, setting, visuals, and level.
