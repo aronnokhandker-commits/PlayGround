@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
   const shell = document.querySelector('#gameShell');
   const $ = (id) => document.getElementById(id);
-  const hud = { rings: $('ringCount'), score: $('scoreCount'), time: $('timeCount'), progress: $('progressFill'), toast: $('toast') };
+  const hud = { rings: $('ringCount'), score: $('scoreCount'), time: $('timeCount'), progress: $('progressFill'), toast: $('toast'), combo: $('comboCount'), boost: $('boostFill') };
   const WORLD_END = 6550, GROUND = 600;
   const platforms = [
     {x:480,y:500,w:210,h:24},{x:900,y:450,w:190,h:24},{x:1330,y:510,w:245,h:24},
@@ -24,7 +24,8 @@
     for(let i=0;i<5;i++) rings.push({x:base+i*38,y:(i===2?GROUND-112:GROUND-58-Math.sin(i/4*Math.PI)*44),got:false});
     if(section%2===0) for(let i=0;i<4;i++) rings.push({x:base+205+i*36,y:GROUND-116-Math.sin(i/3*Math.PI)*55,got:false});
   }
-  let view={w:1280,h:720,scale:1,dpr:1}, player, camera=0, state='intro', last=0, elapsed=0, score=0, ringCount=0, particles=[], shake=0, toastTimer=0, audio=null, soundOn=true, prevJump=false, checkpoint=120;
+  let view={w:1280,h:720,scale:1,dpr:1}, player, camera=0, state='intro', last=0, elapsed=0, score=0, ringCount=0, combo=0, comboTimer=0, bestScore=0, particles=[], shake=0, toastTimer=0, audio=null, soundOn=true, prevJump=false, checkpoint=120;
+  try { bestScore=Number(localStorage.getItem('neonDashBest')||0)||0; } catch (_) { bestScore=0; }
   const keys={left:false,right:false,boost:false,jump:false};
 
   function resize(){
@@ -37,18 +38,22 @@
   function fresh(){
     rings.forEach(r=>r.got=false);enemies.forEach(e=>{e.dead=false;e.x=e.min+(e.max-e.min)*.5});
     player={x:120,y:GROUND,vx:0,vy:0,w:38,h:48,onGround:true,boosting:false,invuln:0,anim:0,facing:1,stamina:1,checkpoint:120};
-    score=0;ringCount=0;elapsed=0;camera=0;particles=[];checkpoint=120;hudUpdate();
+    score=0;ringCount=0;combo=0;comboTimer=0;elapsed=0;camera=0;particles=[];checkpoint=120;hudUpdate();
   }
-  function start(){fresh();state='playing';shell.classList.add('playing');$('introCard').classList.add('hidden');$('resultCard').classList.add('hidden');last=performance.now();}
+  function start(){fresh();state='playing';shell.classList.add('playing');shell.classList.remove('paused');$('pauseButton').textContent='Ⅱ';$('pauseButton').setAttribute('aria-label','Pause game');$('introCard').classList.add('hidden');$('resultCard').classList.add('hidden');$('pauseCard').classList.add('hidden');last=performance.now();}
+  function togglePause(){if(state==='playing'){state='paused';shell.classList.add('paused');$('pauseCard').classList.remove('hidden');$('pauseButton').textContent='▶';$('pauseButton').setAttribute('aria-label','Resume game')}else if(state==='paused'){state='playing';shell.classList.remove('paused');$('pauseCard').classList.add('hidden');$('pauseButton').textContent='Ⅱ';$('pauseButton').setAttribute('aria-label','Pause game');prevJump=keys.jump;last=performance.now()}}
   $('startButton').addEventListener('click',start);$('restartButton').addEventListener('click',start);
+  $('pauseButton').addEventListener('click',togglePause);$('resumeButton').addEventListener('click',togglePause);
   $('soundButton').addEventListener('click',()=>{soundOn=!soundOn;$('soundButton').innerHTML=`♫ <span>SOUND ${soundOn?'ON':'OFF'}</span>`;if(soundOn)beep(540,.07,'sine',.04)});
   addEventListener('keydown',e=>{
     const k=e.code;
-    if(['ArrowLeft','ArrowRight','ArrowUp','Space','ShiftLeft','ShiftRight','KeyA','KeyD','KeyW'].includes(k))e.preventDefault();
+    if(['ArrowLeft','ArrowRight','ArrowUp','Space','ShiftLeft','ShiftRight','KeyA','KeyD','KeyW','Escape'].includes(k))e.preventDefault();
+    if(k==='Escape'){togglePause();return}
     if(k==='ArrowLeft'||k==='KeyA')keys.left=true;if(k==='ArrowRight'||k==='KeyD')keys.right=true;
     if(k==='ShiftLeft'||k==='ShiftRight'||k==='KeyX')keys.boost=true;
     if(k==='Space'||k==='ArrowUp'||k==='KeyW')keys.jump=true;
-    if((k==='Enter'||k==='Space')&&state!=='playing') { if(state==='intro')start();else start(); }
+    if((k==='Enter'||k==='Space')&&(state==='intro'||state==='result'))start();
+    else if((k==='Enter'||k==='Space')&&state==='paused')togglePause();
   });
   addEventListener('keyup',e=>{if(e.code==='ArrowLeft'||e.code==='KeyA')keys.left=false;if(e.code==='ArrowRight'||e.code==='KeyD')keys.right=false;if(['ShiftLeft','ShiftRight','KeyX'].includes(e.code))keys.boost=false;if(['Space','ArrowUp','KeyW'].includes(e.code))keys.jump=false;});
   document.querySelectorAll('[data-control]').forEach(btn=>{
@@ -61,12 +66,12 @@
     if(!soundOn)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(volume,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration)}catch(_){ }
   }
   function fmt(n){return String(n).padStart(2,'0')}
-  function hudUpdate(){hud.rings.textContent=fmt(ringCount);hud.score.textContent=String(score).padStart(6,'0');hud.time.textContent=`${fmt(Math.floor(elapsed/60))}:${fmt(Math.floor(elapsed%60))}`;hud.progress.style.width=`${Math.min(100,player?player.x/WORLD_END*100:0)}%`}
+  function hudUpdate(){hud.rings.textContent=fmt(ringCount);hud.score.textContent=String(score).padStart(6,'0');hud.time.textContent=`${fmt(Math.floor(elapsed/60))}:${fmt(Math.floor(elapsed%60))}`;hud.progress.style.width=`${Math.min(100,player?player.x/WORLD_END*100:0)}%`;hud.combo.textContent=`x${Math.max(1,Math.min(5,1+Math.floor(combo/3)))}`;hud.boost.style.width=`${Math.round((player?player.stamina:1)*100)}%`}
   function toast(msg){hud.toast.textContent=msg;hud.toast.classList.add('show');toastTimer=1.3}
   function burst(x,y,color,n=8){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=70+Math.random()*240;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-70,life:.45+Math.random()*.55,max:.9,color,size:2+Math.random()*3})}}
   function update(dt){
     if(state!=='playing')return;
-    elapsed+=dt;toastTimer=Math.max(0,toastTimer-dt);if(!toastTimer)hud.toast.classList.remove('show');
+    elapsed+=dt;comboTimer=Math.max(0,comboTimer-dt);if(!comboTimer)combo=0;toastTimer=Math.max(0,toastTimer-dt);if(!toastTimer)hud.toast.classList.remove('show');
     const p=player; p.anim+=dt*(Math.abs(p.vx)*.04+2);p.invuln=Math.max(0,p.invuln-dt);
     const input=(keys.right?1:0)-(keys.left?1:0);if(input)p.facing=input;
     const boost=keys.boost&&p.stamina>.02&&Math.abs(p.vx)>100;
@@ -87,14 +92,14 @@
     for(const sx of springs){if(Math.abs(p.x-sx)<26&&Math.abs(p.y-GROUND)<8&&p.onGround){p.vy=-870;p.onGround=false;p.vx=Math.max(p.vx,390);beep(610,.18,'sine',.07);burst(sx,GROUND-7,'#b8ff6a',10);toast('SPRING BOOST!')}}
     if(p.x>checkpoint+420){checkpoint=p.x;p.checkpoint=Math.floor(p.x);}
     if(p.y>820){p.x=Math.max(25,checkpoint-35);p.y=GROUND;p.vy=0;p.vx=100;p.invuln=1.5;shake=9;toast('BACK IN THE RUN!');}
-    for(const r of rings){if(!r.got&&Math.hypot(p.x-r.x,p.y-25-r.y)<35){r.got=true;ringCount++;score+=100;beep(760+(ringCount%5)*90,.075,'sine',.045);burst(r.x,r.y,'#c7ff70',5)}}
-    for(const e of enemies){if(e.dead)continue;e.x+=e.dir*65*dt;if(e.x<e.min||e.x>e.max)e.dir*=-1;if(Math.abs(p.x-e.x)<34&&Math.abs((p.y-20)-(GROUND-22))<38){if(p.vy>100){e.dead=true;p.vy=-420;score+=250;burst(e.x,GROUND-25,'#ffb160',12);beep(420,.12,'square',.04)}else if(!p.invuln){if(ringCount){ringCount=Math.max(0,ringCount-10);for(let n=0;n<Math.min(10,ringCount+10);n++)burst(p.x,p.y-22,'#c7ff70',1);p.invuln=1.4;p.vx=-p.facing*320;p.vy=-300;shake=8;toast('SHARDS SCATTERED!')}else{p.invuln=1.6;p.vx=-p.facing*350;p.vy=-340;shake=8;toast('WATCH YOUR STEP!')}beep(130,.2,'sawtooth',.05)}}}
+    for(const r of rings){if(!r.got&&Math.hypot(p.x-r.x,p.y-25-r.y)<35){r.got=true;ringCount++;combo++;comboTimer=1.65;const multiplier=Math.min(5,1+Math.floor(combo/3));score+=100*multiplier;beep(760+(ringCount%5)*90,.075,'sine',.045);burst(r.x,r.y,'#c7ff70',5);if(combo===3||combo===6||combo===9||combo===12)toast(`SHARD CHAIN x${multiplier}!`)}}
+    for(const e of enemies){if(e.dead)continue;e.x+=e.dir*65*dt;if(e.x<e.min||e.x>e.max)e.dir*=-1;if(Math.abs(p.x-e.x)<34&&Math.abs((p.y-20)-(GROUND-22))<38){if(p.vy>100){e.dead=true;p.vy=-420;score+=250;burst(e.x,GROUND-25,'#ffb160',12);beep(420,.12,'square',.04)}else if(!p.invuln){combo=0;comboTimer=0;if(ringCount){ringCount=Math.max(0,ringCount-10);for(let n=0;n<Math.min(10,ringCount+10);n++)burst(p.x,p.y-22,'#c7ff70',1);p.invuln=1.4;p.vx=-p.facing*320;p.vy=-300;shake=8;toast('SHARDS SCATTERED!')}else{p.invuln=1.6;p.vx=-p.facing*350;p.vy=-340;shake=8;toast('WATCH YOUR STEP!')}beep(130,.2,'sawtooth',.05)}}}
     if(p.x>WORLD_END-100){finish(true);return}
     const target=Math.max(0,Math.min(WORLD_END-view.w*.72,p.x-view.w*.32));camera+=(target-camera)*Math.min(1,dt*4.5);
     for(const q of particles){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=340*dt;q.life-=dt}particles=particles.filter(q=>q.life>0);
     shake=Math.max(0,shake-dt*20);hudUpdate();
   }
-  function finish(win){state='result';shell.classList.remove('playing');$('resultCard').classList.remove('hidden');$('resultTitle').textContent=win?'SKYLINE CONQUERED.':'NICE RUN.';$('resultCopy').textContent=win?'You outran the sunset. Ready for another lap?':'The skyline is yours. One more run?';$('finalRings').textContent=fmt(ringCount);$('finalScore').textContent=String(score+Math.max(0,Math.floor((WORLD_END-player.x)*0))).padStart(6,'0');$('finalTime').textContent=hud.time.textContent;beep(520,.15,'sine',.05);setTimeout(()=>beep(700,.2,'sine',.05),120)}
+  function finish(win){state='result';shell.classList.remove('playing','paused');$('pauseCard').classList.add('hidden');$('resultCard').classList.remove('hidden');const timeBonus=win?Math.max(0,10000-Math.floor(elapsed*100)):0;const finalScore=score+timeBonus;const record=finalScore>bestScore;if(record){bestScore=finalScore;try{localStorage.setItem('neonDashBest',String(bestScore))}catch(_){}}$('resultTitle').textContent=win?'SKYLINE CONQUERED.':'NICE RUN.';$('resultCopy').textContent=record?(win?'NEW PERSONAL BEST — the skyline belongs to you.':'NEW SCORE BEST — one more run to claim the skyline?'):win?`Time bonus +${timeBonus.toLocaleString()} — ready for another lap?`:'The skyline is yours. One more run?';$('finalRings').textContent=fmt(ringCount);$('finalScore').textContent=String(finalScore).padStart(6,'0');$('bestScore').textContent=String(bestScore).padStart(6,'0');$('finalTime').textContent=hud.time.textContent;beep(520,.15,'sine',.05);setTimeout(()=>beep(700,.2,'sine',.05),120)}
   function rr(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r);}
   function drawBackground(){
     const w=view.w;let g=ctx.createLinearGradient(0,0,0,720);g.addColorStop(0,'#11163d');g.addColorStop(.48,'#493477');g.addColorStop(1,'#fb8e77');ctx.fillStyle=g;ctx.fillRect(0,0,w,720);

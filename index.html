@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#101338" />
-  <title>Neon Dash — Skyline Sprint</title>
+  <title>Neon Dash — Legendary Skyline Sprint</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -17,13 +17,15 @@
     <header class="topbar">
       <a class="wordmark" href="#" aria-label="Neon Dash home"><span class="mark">N</span><span>NEON<span class="wordmark-light">DASH</span></span></a>
       <div class="level-tag"><i></i> SKYLINE SPRINT <span>01</span></div>
-      <button class="sound-button" id="soundButton" aria-label="Toggle sound">♫ <span>SOUND ON</span></button>
+      <div class="top-actions"><button class="pause-button" id="pauseButton" aria-label="Pause game" title="Pause (Esc)">Ⅱ</button><button class="sound-button" id="soundButton" aria-label="Toggle sound">♫ <span>SOUND ON</span></button></div>
     </header>
     <section class="hud" id="hud" aria-live="polite">
       <div class="hud-stat"><span class="stat-icon ring-icon">◉</span><div><small>SHARDS</small><strong id="ringCount">00</strong></div></div>
       <div class="hud-stat"><span class="stat-icon score-icon">✦</span><div><small>SCORE</small><strong id="scoreCount">000000</strong></div></div>
       <div class="hud-stat time-stat"><span class="stat-icon">◷</span><div><small>TIME</small><strong id="timeCount">00:00</strong></div></div>
+      <div class="hud-stat combo-stat"><span class="stat-icon">✧</span><div><small>CHAIN</small><strong id="comboCount">x1</strong></div></div>
     </section>
+    <div class="boost-meter" aria-label="Boost energy"><span id="boostFill"></span><small>BOOST</small></div>
     <aside class="progress-track" aria-label="Level progress"><span id="progressFill"></span></aside>
     <div class="toast" id="toast" aria-live="polite"></div>
     <section class="screen-card intro-card" id="introCard">
@@ -34,11 +36,18 @@
       <div class="control-hint"><span>← →</span> MOVE <b>·</b> <span>SPACE</span> JUMP <b>·</b> <span>SHIFT</span> BOOST</div>
       <div class="card-glow"></div>
     </section>
+    <section class="screen-card pause-card hidden" id="pauseCard">
+      <div class="eyebrow"><span></span> TAKE A BREATHER <span></span></div>
+      <h2>RUN PAUSED.</h2>
+      <p>Your skyline sprint is waiting.</p>
+      <button class="primary-button" id="resumeButton">KEEP RUNNING <span>↗</span></button>
+      <div class="control-hint">PRESS <span>ESC</span> TO RESUME</div>
+    </section>
     <section class="screen-card result-card hidden" id="resultCard">
       <div class="eyebrow"><span></span> RUN COMPLETE <span></span></div>
       <h2 id="resultTitle">NICE RUN.</h2>
       <p id="resultCopy">The skyline is yours.</p>
-      <div class="result-stats"><div><small>SHARDS</small><strong id="finalRings">00</strong></div><div><small>FINAL SCORE</small><strong id="finalScore">000000</strong></div><div><small>TIME</small><strong id="finalTime">00:00</strong></div></div>
+      <div class="result-stats"><div><small>SHARDS</small><strong id="finalRings">00</strong></div><div><small>FINAL SCORE</small><strong id="finalScore">000000</strong></div><div><small>BEST</small><strong id="bestScore">000000</strong></div><div><small>TIME</small><strong id="finalTime">00:00</strong></div></div>
       <button class="primary-button" id="restartButton">RUN IT BACK <span>↻</span></button>
     </section>
     <nav class="touch-controls" id="touchControls" aria-label="Touch game controls">
