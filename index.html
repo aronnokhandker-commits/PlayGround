@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Ghost Learn — Pac Maze</title>
+<style>
+:root{--ink:#060918;--panel:#11172d;--cyan:#42d6ff;--yellow:#ffd833;--pink:#ff74aa}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050714;color:#fff;font-family:Inter,system-ui,sans-serif;touch-action:none}
+body{display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#151a43 0,#090c20 45%,#03040c 100%)}
+#shell{width:min(92vw,980px);height:min(94vh,760px);display:grid;grid-template-columns:190px minmax(400px,610px) 190px;gap:18px;align-items:center}
+.panel{height:min(680px,88vh);border:1px solid #29315a;border-radius:16px;background:linear-gradient(145deg,#151a33cc,#090c1dcc);box-shadow:0 14px 50px #0008,inset 0 1px #fff1;padding:20px}
+.panel h2{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#7f89ae;margin:18px 0 10px}.stat{font:700 24px ui-monospace,monospace;margin-bottom:14px}.stat small{display:block;font-size:10px;color:#818aae;letter-spacing:.12em;margin-bottom:5px}
+.brand{font-weight:900;font-size:18px;letter-spacing:.08em}.brand b{color:var(--yellow)}
+.ghost-row{display:flex;align-items:center;gap:9px;margin:8px 0;font-size:12px;color:#bac2df}.dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 12px currentColor}.r{background:#ff4b6e}.b{background:#55aaff}.o{background:#ffad45}.p{background:#f7a0d5}
+#center{display:flex;flex-direction:column;align-items:center}.topbar{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.topbar .level{font-size:12px;font-weight:800;letter-spacing:.15em;color:#91a0cc}canvas{width:100%;max-height:calc(94vh - 62px);aspect-ratio:19/21;border-radius:12px;background:#07091a;image-rendering:auto;box-shadow:0 18px 60px #000a,0 0 0 1px #27305a}
+.ability{border:1px solid #313961;border-radius:10px;padding:10px;margin:7px 0;background:#12182f}.ability strong{font-size:12px}.bar{height:5px;border-radius:8px;background:#282d48;margin-top8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--cyan);width:0;transition:.2s}
+#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#050714b8;backdrop-filter:blur(8px);z-index:10}#card{text-align:center;border:1px solid #394271;border-radius:18px;background:#10152eea;padding:28px 34px;box-shadow:0 20px 80px #000}.kicker{color:var(--yellow);font-size:11px;font-weight:800;letter-spacing:.22em}#card h1{margin:10px 0 6px;font-size:38px}#card p{color:#adb5d4;font-size:14px;margin:0 0 20px}.button{border:0;border-radius:9px;background:var(--yellow);color:#17130b;font-weight:900;padding:12px 20px;cursor:pointer}
+#touch{display:none;position:fixed;bottom:12px;gap:8px;z-index:5}.dpad{display:grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px}.dpad button{border:1px solid #596181;background:#171b33dd;color:white;border-radius:8px;font-size:18px}.dpad button:nth-child(1){grid-column:2}.dpad button:nth-child(2){grid-column:1;grid-row:2}.dpad button:nth-child(3){grid-column:2;grid-row:2}.dpad button:nth-child(4){grid-column:3;grid-row:2}
+@media(max-width:820px){#shell{grid-template-columns:1fr;width:100%;height:100%;padding:8px}#left,#right{display:none}#center{height:100%;justify-content:center}canvas{max-height:78vh;width:auto;max-width:100%;height:auto}#touch{display:block;left:50%;transform:translateX(-50%)}}@media(max-height:700px) and (pointer:coarse){canvas{max-height:68vh}.topbar{margin-bottom:3px}}
+</style></head>
+<body>
+<div id="shell"><aside class="panel" id="left"><div class="brand"><b>GHOST</b> LEARN</div><h2>Run data</h2><div class="stat"><small>SCORE</small><span id="score">000000</span></div><div class="stat"><small>HIGH SCORE</small><span id="high">000000</span></div><h2>Lives</h2><div id="lives">● ● ●</div><h2>Ghosts</h2><div class="ghost-row"><i class="dot r"></i><span>Route Learner</span></div><div class="ghost-row"><i class="dot b"></i><span>Ambush</span></div><div class="ghost-row"><i class="dot o"></i><span>Tracker</span></div></aside>
+<section id="center"><div class="topbar"><div class="level">LEVEL <span id="level">01</span></div><div class="level" id="phase">CHASE</div></div><canvas id="game" width="570" height="630"></canvas></section>
+<aside class="panel" id="right"><h2>Learning engine</h2><div class="ability"><strong>Route memory</strong><div class="bar"><i id="memory"></i></div></div><div class="ability"><strong>Prediction</strong><div class="bar"><i id="predict"></i></div></div><h2>Power pellets</h2><div id="pellets">● ● ● ●</div><h2>Signals</h2><div id="signal" style="font-size:12px;color:#8e99bd;line-height:1.8">Analyzing route…</div></aside></div>
+<div id="overlay"><div id="card"><div class="kicker">PROTOTYPE 01</div><h1>GHOST LEARN</h1><p>Every turn teaches them a faster route.</p><button class="button" id="start">START RUN</button></div></div>
+<div id="touch"><div class="dpad"><button data-dir="up">▲</button><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div></div>
+<script>
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),T=30,COLS=19,ROWS=21;
+const MAP=[
+'###################','#.......#.......#','#.##.###.#.###.##.#','#o##.###.#.###.##o#','#.................#','#.##.#.#####.#.##.#','#....#...#...#....#','####.###.#.###.####','   #.#.......#. #','####.#.## ##.#.####','    ...#   #...    ','####.#.#####.#.####','   #.#.......#. #','####.#.#####.#.####','#........#........#','#.##.###.#.###.##.#','#o.#..... .....#.o#','##.#.#.#####.#.#.##','#....#...#...#....#','#.......#.........#','###################'];
+let level=1,score=+(localStorage.ghostHigh||0),high=+(localStorage.ghostHigh||0),lives=3,active=false,power=0,phase=0,route=[],pellets=0,walk=0;
+const dirs={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+let player,ghosts;
+function resetPos(){player={x:9,y:15,dx:0,dy:0,nx:0,ny:-1,mouth:0};ghosts=[{x:9,y:9,c:'#ff4b6e',dx:-1,dy:0,ai:'route'},{x:8,y:9,c:'#55aaff',dx:1,dy:0,ai:'ambush'},{x:10,y:9,c:'#ffad45',dx:-1,dy:0,ai:'track'}]}
+resetPos();
+function wall(x,y){if(x<0||x>=COLS||y<0||y>=ROWS)return 1;return MAP[y][x]=='#'?1:0}
+function dot(x,y){return MAP[y][x]=='.'||MAP[y][x]=='o'}
+function countPellets(){pellets=0;for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(dot(x,y))pellets++}
+countPellets();
+function setDir(d){if(dirs[d]){player.nx=dirs[d].x;player.ny=dirs[d].y}}
+document.querySelectorAll('[data-dir]').forEach(b=>b.onpointerdown=e=>{e.preventMouseDefault?.();setDir(b.dataset.dir)});
+addEventListener('keydown',e=>{const m={ArrowUp:'up',w:'up',W:'up',ArrowDown:'down',s:'down',S:'down',ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right'};if(m[e.key]){e.preventDefault();setDir(m[e.key])}});
+function overlay(title,text){const o=document.getElementById('overlay'),c=document.getElementById('card');c.innerHTML=`<div class="kicker">GHOST LEARN</div><h1>${title}</h1><p>${text}</p><button class="button" id="start">CONTINUE</button>`;o.style.display='flex';o.querySelector('#start').onclick=()=>{o.style.display='none';active=true;resetPos();last=performance.now();requestAnimationFrame(loop)}}
+function moveEntity(e,choose){if(!choose)return;const opts=Object.values(dirs).filter(d=>!wall(e.x+d.x,e.y+d.y));if(opts.length===0)return;let d=choose(opts);e.dx=d.x;e.dy=d.y}
+function learnAt(x,y){let k=x+','+y;route.push(k);if(route.length>250)route.shift()}
+function ghostDir(g,opts){let tx=player.x,ty=player.y;
+ if(g.ai=='ambush'){tx+=player.dx*4||player.nx*4;ty+=player.dy*4||player.ny*4}
+ if(g.ai=='route'&&route.length>8){const counts={};for(const s of route){let [x,y]=s.split(',').map(Number);if(Math.abs(x-g.x)+Math.abs(y-g.y)<7){let k=x+','+y;counts[k]=(counts[k]||0)+1}}let best=opts[0],bd=999;for(const d of opts){let cx=g.x+d.x,cy=g.y+d.y;let dist=Math.abs(tx-cx)+Math.abs(ty-cy);if(power>0)dist=-dist;for(let k=0;k<route.length;k++){let [rx,ry]=route[k].split(',').map(Number);if(rx===cx&&ry===cy)dist-=2}if(dist<bd){bd=dist;best=d}}return best}
+ let best=opts[0],bd=999;for(const d of opts){let cx=g.x+d.x,cy=g.y+d.y;let dist=Math.abs(tx-cx)+Math.abs(ty-cy);if(power>0)dist=-dist;if(dist<bd){bd=dist;best=d}}return best}
+function update(dt){if(!active)return;phase+=dt;walk+=dt;const ps=6;
+ if(walk>.11){walk=0;if(!wall(player.x+player.nx,player.y+player.ny)){player.dx=player.nx;player.dy=player.ny}if(!wall(player.x+player.dx,player.y+player.dy)){player.x+=player.dx;player.y+=player.dy;learnAt(player.x,player.y)} else {player.dx=0;player.dy=0}
+ let ch=MAP[player.y][player.x];if(ch=='.'||ch=='o'){MAP[player.y]=MAP[player.y].substring(0,player.x)+ ' ' +MAP[player.y].substring(player.x+1);score+=ch=='o'?50:10;if(ch=='o')power=8;countPellets();if(pellets===0){level++;active=false;overlay('LEVEL '+level,'The ghosts remember '+route.length+' route points.');}}
+ ghosts.forEach(g=>{const opts=Object.values(dirs).filter(d=>!wall(g.x+d.x,g.y+d.y));let d=ghostDir(g,opts);g.dx=d.x;g.dy=d.y;if(!wall(g.x+g.dx,g.y+g.dy)){g.x+=g.dx;g.y+=g.dy}});
+ for(const g of ghosts){if(g.x===player.x&&g.y===player.y){if(power>0){score+=200;g.x=9;g.y=9}else{lives--;active=false;if(lives<=0){high=Math.max(high,score);localStorage.ghostHigh=high;overlay('RUN OVER','Score '+score+' · Route memory saved');}else overlay('CAUGHT','Adapt. Change your angle.')}}}
+ power=Math.max(0,power-dt);
+ document.getElementById('score').textContent=String(score).padStart(6,'0');document.getElementById('high').textContent=String(high).padStart(6,'0');document.getElementById('lives').textContent='● '.repeat(lives)||'—';document.getElementById('level').textContent=String(level).padStart(2,'0');document.getElementById('phase').textContent=power>0?'FLEE':'CHASE';document.getElementById('memory').style.width=Math.min(100,route.length/2.5)+'%';document.getElementById('predict').style.width=Math.min(100,route.length/4)+'%';document.getElementById('signal').innerHTML=`Route points: ${route.length}<br>Memory: ${route.length>80?'HIGH':'LOW'}<br>Pellets: ${pellets}`}
+}
+function draw(){ctx.clearRect(0,0,570,630);ctx.fillStyle='#080a1c';ctx.fillRect(0,0,570,630);ctx.strokeStyle='#2937a1';ctx.lineWidth=2;
+for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const c=MAP[y][x];if(c=='#'){ctx.fillStyle='#11183c';ctx.fillRect(x*T+2,y*T+2,26,26);ctx.strokeRect(x*T+3,y*T+3,24,24)}else if(c=='.'){ctx.fillStyle='#ffb8e4';ctx.beginPath();ctx.arc(x*T+15,y*T+15,2.6,0,7);ctx.fill()}else if(c=='o'){ctx.fillStyle='#fff';ctx.shadowColor='#7be7ff';ctx.shadowBlur=10;ctx.beginPath();ctx.arc(x*T+15,y*T+15,7+Math.sin(performance.now()/150)*1.5,0,7);ctx.fill();ctx.shadowBlur=0}}
+function px(e){return{x:e.x*T+15,y:e.y*T+15}}
+let p=px(player);ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle='#ffd92e';ctx.shadowColor='#ffd92e';ctx.shadowBlur=10;ctx.beginPath();const angle=Math.atan2(player.dy||player.ny||0,player.dx||player.nx||1),m=.18+Math.abs(Math.sin(phase*8))*0.22;ctx.moveTo(0,0);ctx.arc(0,0,12,angle+m,angle-m,Math.PI*2>(angle-m-angle)?false:false);ctx.closePath();ctx.fill();ctx.restore();
+ghosts.forEach(g=>{let q=px(g);ctx.save();ctx.translate(q.x,q.y);ctx.fillStyle=power>0?'#4f73ff':g.c;ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=9;ctx.beginPath();ctx.arc(0,-1,12,Math.PI,0);ctx.lineTo(12,10);ctx.lineTo(7,7);ctx.lineTo(3,10);ctx.lineTo(-2,7);ctx.lineTo(-7,10);ctx.lineTo(-12,7);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-5,-3,3,0,7);ctx.arc(5,-3,3,0,7);ctx.fill();ctx.fillStyle='#17328a';ctx.beginPath();ctx.arc(-5,-3,1.4,0,7);ctx.arc(5,-3,1.4,0,7);ctx.fill();ctx.restore()})
+}
+let last=0;function loop(now){if(active){update((now-last)/1000);last=now}draw();if(active)requestAnimationFrame(loop)}
+const orig=document.getElementById('start');orig.onclick=()=>{document.getElementById('overlay').style.display='none';active=true;last=performance.now();MAP.forEach((v,i)=>{});requestAnimationFrame(loop)};document.getElementById('high').textContent=String(high).padStart(6,'0');draw();
+</script></body></html>
